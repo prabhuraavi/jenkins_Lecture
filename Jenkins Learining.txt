@@ -1,0 +1,365 @@
+
+-------------------------------
+Lecture-00 Jenkins installation
+-------------------------------
+
+https://linuxize.com/post/how-to-install-jenkins-on-centos-7/
+
+
+--------------------------------------
+Lecture-01 Freestyle job sample script
+--------------------------------------
+#!/bin/bash
+for a in 1 2 3 4 5 6 7 8 9 10
+do
+
+	if [ $a == 5 ];
+    then
+    	sleep 10
+    fi
+    
+    echo "Iteration no $a"
+done
+
+---------------------------------------------------
+Lecture-02 Jenkins integration with GIT and Git Hub
+---------------------------------------------------
+
+Search for the "Github integration" and "Github plugin" plugins from manage jenkins
+
+Cron Job or Job Scheduling
+--------------------------
+Minutes [0-59]
+|   Hours [0-23]
+|   |   Days [1-31]
+|   |   |   Months [1-12]
+|   |   |   |   Days of the Week [Numeric, 0-6]
+|   |   |   |   |
+*   *   *   *   * 
+
+---------------------------------------------------
+Lecture-03 : Installing maven on Linux 
+---------------------------------------------------
+
+1. Verify mvn is installed or not by
+	mvn --version
+2. if version number reflects, mvn installed 
+	else we need to install
+3. now verify mvn --version
+	Apache Maven 3.0.5 (Red Hat 3.0.5-17)
+	Maven home: /usr/share/maven
+	Java version: 1.8.0_292, vendor: Red Hat, Inc.
+	Java home: /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64/jre
+	Default locale: en_US, platform encoding: UTF-8
+	OS name: "linux", version: "3.10.0-1160.25.1.el7.x86_64", arch: "amd64", family: "unix"
+
+
+---------------------------------------------------
+Lecture-04 : Configuring Jenkins with Maven and GIT
+---------------------------------------------------
+
+Step 01: jenkins dashboard
+
+Step 02: Manage Jenkins
+
+Step 03: Global Tool Configuration
+
+Step 04: JDK -> Add JDK
+		Name:	Local_JDK
+		Path:	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.292.b10-1.el7_9.x86_64
+		(click outside the box, if any error doesn't arrived then path is correct)
+
+Step 05: GIT -> Add GIT
+		Name:	Local_GIT (no need to add anything in the path)
+
+Step 06: Mavem -> Add Maven
+		Name:	Loocal_Maven
+		Path:	/usr/share/maven
+
+Step 07: Apply & Save
+
+---------------------------------------------------
+Lecture-05 : Creating First Maven Project
+---------------------------------------------------
+
+Step 01: Go to the github (already having the project in my github account)
+
+Step 02: create a freestyly project
+		Demo02_Maven_Project -> ok
+
+Step 03: Discard old builds
+
+Step 04: Select GIT from Source Code Management
+		Provide the git repo URL
+		Branch Specifier: */master |
+		
+Step 05: Build Environment: Delete workspace before build starts
+
+Step 06: Build -> invoke top level Maven targets
+		Maven version	: Local_Maven
+		Goals		: test install
+		click on Advance
+		POM		: /maven-samples/single-module/pom.xml
+		Save
+
+Step 07: Click on "Build Now"
+	(later we can change the Goals for eg: clean test package to generate war files to deploy the same)
+
+---------------------------------------------------
+Lecture-06 : Source code polling in Jenkins
+---------------------------------------------------
+
+Step 01: Select the job -> Configure
+
+Step 02: Build Trigger -> Poll SCM
+		* * * * *	(Min - Hour - Date - Month - Day of week)
+				(0-59 | 0-23 | 0-31 | 0-12| 0-6)
+
+Step 03: GO to the above mentioned git code and made few changes to check the polling in jenkins
+		Modify/create/update any text in the code
+		Here am going with TestGreeter.java file
+		commit the code and push the same to central repo by using git push
+
+Step 04: Go to the project and wait for few seconds, build will start automatically.
+
+
+---------------------------------------------------
+Lecture-07 : Remote Build Triggers in Jenkins
+---------------------------------------------------
+
+Triggering the build jobs in Jenkins remotely (on other server) by using "TestAuth" key
+
+Step 01: Select the job -> Configure
+
+Step 02: Build Trigger -> Trigger Build Remotely 
+		Authentication Token : TestAuth
+
+Step 03: Execute the job by selecting the provided URL
+		JENKINS_URL/job/Demo_Job01/build?token=TOKEN_NAME or /buildWithParameters?token=TOKEN_NAME
+		
+Step 04: Open another browser -> Paste the below mentioned URL with jenkins URL
+localhost:8080/job/Demo_Job01/build?token=TestAuth or /buildWithParameters?token=TestAuth
+
+Step 05: Login with jenkins credentials (it won't display anything in this browser)
+
+Step 06: Check the build jobs in the current project/task
+		Build number will be incremented
+
+
+---------------------------------------------------
+Lecture-08 : Archiving Jenkins Job Artifacts
+---------------------------------------------------
+
+Artifacts: Data/file created as running a Jenkins job.
+
+Archiving: Saving the files outside the workspace.
+
+Step 01: Go to maven_project_02 in dashboard
+
+Step 02: Configure
+
+Step 03: Post build actions -> Add Post build actions -> Archive the artifacts -> **/*.jar
+		**/*.jar will archive all the JAR files.
+
+Step 04: Save
+
+Step 05: Build the job
+		We can find the Build Artifacts in the console output
+
+---------------------------------------------------
+Lecture-09 : Installing & Configuring Tomcat 8
+---------------------------------------------------
+		
+Tomcat: A webserver from Apache, that executes java based web-apps and renders the web-pages
+
+Step 01: update the server: 
+		yum update -y
+
+Step 02: yum install wget and zip -y
+
+Step 03: yum install defauly-jfk -y
+
+Step 04: go to tomcat downloads page
+		|-> Select Tomcat version 8 (stable version and easy to install)
+		|-> Right click on the zip
+		|-> Copy link address
+
+Step 05: Go to terminal and navigate to /tmp
+		cd /tmp
+
+Step 06: wget "paste the tomcat8 download URL"
+
+Step 07: unzip the downloaded .zip file
+		unzip apache-tomcat8.zip
+
+Step 08: rename the unzipped apache-tomcat8 to tomcat8
+		mv apache-tomcat8 tomcat8
+
+Step 09: mv the tomcat8 folder to /opt/tomcat
+		mv tomcat8 /opt/tomcat
+
+Step 10: Change the tomcat port from 8080 to 9090
+		|-> Because default port for Tomcat is 8080
+		|-> But Jenkins also running on the same port
+		|-> cd /opt/tomcat/tomcat
+		|-> vim server,xml
+		|-> search for "connector port" not the "connector executor"
+		|-> change connector port from 8080 to 9090 -> save the file
+
+Step 11: Start the tomcat service
+		|-> cd /opt/tomcat/tomcat8/bin
+		|-> provide execution permission to the .sh files
+		|-> chmod +x *.sh
+		|-> Start the tomcat service: sh startup.sh
+		|-> Open the browser, ip_address:9090 -> apache tomcat webpage will display
+		|-> Stop the tomcat service: sh shutdown.sh
+		|-> Page loading error will be dispalayed
+
+Step 12: Configuring apache tomcat with Jenkins
+		|-> cd /opt/tomcat/tomcat8/conf
+		|-> find and modify tomcat-userx.xml
+		|-> At the end of the file
+			-> rolename = "manager-script"
+			-> rolename = "manager-gui"
+			-> username ="tomcat" password="root" roles="manager-scripts,manager-gui"
+			-> delete remaining lines 
+		|->now restart the tomcat server by
+			-> sh shutdown.sh
+			-> sh startup.sh in the bin folder
+
+------------------------------------------------------------
+Lecture-10 : Deploy the application in a Staging Environment
+------------------------------------------------------------
+Part 01 - Deploying the application without depending on other project/build
+----------------------------------------------------------------------------
+
+Step 01: Jenkins Dashboard -> Manage Jenkins -> Manage Plugins ->Available
+		|-> Search for "Copy Artifact and Deploy to Container" Plugins and install those
+
+Step 02: Creating a new view only for the "Tomcat Applications"
+		|-> Jenkins Dashboard -> New View
+		|-> View Name:	Tomcat Applications
+		|-> Select "List View" -> OK -> OK 
+		
+Step 03:   In "Tomcat Applications"
+		|-> New Item
+			-> Name: 01_Application_Packaging
+			-> Freestyle Project -> OK
+		|-> Description
+			-> Packaging the java-tomcat-sample project and creating war file
+			-> Discard old builds
+				- Days to keep			: 7
+				- Max # of builds to keep	: 5			
+		|-> Source Code Management 
+			-> Git
+			-> Repository URL: https://github.com/swamydvps/maven-sample.git
+			-> Branch to Build: */master
+		|-> Build Environment
+			-> Delete Workspace before build starts
+			-> Add timestamp to the console output
+		|-> Build
+			-> Invoke toplevelMaven targets
+				- Maven Version :Local_Maven
+				- Goals		: clean package
+				- Advanced
+					POM	: java-tomcat-sample/pom.xml 
+					(file location of the pom.xml in the current project)
+	
+	
+		|-> Post-build Actions
+			-> Archiving the artifacts: **/*.war
+			-> save
+
+Step 04: Deploying Application in Staging Environment
+		|-> Create a freestyle project -> "02_Application_Deployment"
+		|-> Discard old builds
+		|-> Build Environment
+			- Add timestamps to the console output
+		|-> Build
+			- Copy artifacts from another project
+				* Name			: 01_Packaging_Application
+				* which Build		: Latest successful build + Stable build only
+				* Artifacts to copy	: **/*.war
+
+		|-> Post Build Actions
+			- Deploy war/ear to a container
+				* WAR/EAR files		: **/.war
+				* contextpath		: /myDeployment
+				* Containers		: Add container -> Tomcat 8.x Remote
+								Credential (which were we updated in the tomcat-user.xml)
+								| Add
+								| Jenkins
+								| username: tomcat
+								| Password: root
+								Tomcat URL
+								| http://192.168.1.203:9090 (http:// must)
+								| Save
+
+Step 05: Dashboard -> Tomcat Applications -> 02_Application_Deployment
+		|-> Build Now (If build is successful 99% it will successful)
+			***TROUBLESHOOTING THE ERROR UNABLE TO DEPLOY THE WAR FILE***
+			-------------------------------------------------------------
+			In Linux Machine/Tomcat Server
+			cd /opt/tomcat/tomcat8/conf/
+			vi tomcat-users.xml
+			 <role rolename="manager-script"/>
+  			<role rolename="manager-gui"/>
+  			<user username="tomcat" password="root" roles="manager-script,manager-gui"/>
+			</tomcat-users>
+			esc :wq
+			
+			Restart the Tomcat service
+			--------------------------
+			cd /opt/tomcat/tomcat8/bin
+			sh shutdown.sh
+			sh startup.sh
+			
+			If still the issue persists
+			---------------------------
+			cd /opt/tomcat/tomcat8/webapps/manager/META-INF
+			ls context.xml
+			comment the below part by using "<!-- -->"
+			
+			<!--
+			  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+				 allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
+			-->
+			esc :wq
+			restart the tomcat server by using shutdown.sh and startup.sh
+			
+		|-> Open the browser
+			- 192.168.1.203:9090/myDeployment
+			- We can see our deployed web application content
+
+
+Part 02 - Deploying the application depending on each other project/build
+-------------------------------------------------------------------------
+
+Step 01: Go to Tomcat Applications
+		|-> 01_Packaging_Application -> Configuration
+			- Build Triggers -> Poll SCM -> * * * * *
+			- Post Build Actions -> Build Other Projects
+				* Projects to build	: 02_Application_Deployment
+					- Trigger only if build is stable
+
+Step 02: Save -> Build Now
+		|-> We can see new build will automatically trigger in 02_Application_Deployment also
+		|-> Open the browser
+			- 192.168.1.203:9090/myDeployment
+			- We can see our deployed web application content with added text
+
+[NOTE: To perform this we can modify the code or files from our github repository for auto trigger]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
